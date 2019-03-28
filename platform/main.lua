@@ -1,8 +1,8 @@
+Box = require "box"
 Game = require "game"
 Player = require "player"
 Controls = require "controls"
 World = require "world"
-Box = require "box"
 
 math.randomseed(os.time())
 

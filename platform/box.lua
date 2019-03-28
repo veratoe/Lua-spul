@@ -1,17 +1,57 @@
 Box = {}
 
 function Box.getBoundingBox(x, y, w, h)
-	return {x1 = x, y1 = y, x2 = x+w, y2 = y+h)
+	return { x1 = x, y1 = y, x2 = x+w, y2 = y+h }
 end
 
+function Box.toRectangle(box)
+	return { x = box.x1, y = box.y1, w = box.x2 - box.x1, h = box.y2 - box.y1 }
+end
 local function overlap(a1, a2, b1, b2) --two 1D segments overlap
 	return not (a2 < b1 or b2 < a1)
 end
 
-function Box.collides(Box1, Box2)
-	return not (overlap(Box1.x1, Box1.x2, Box2.x1, Box2.x2) or overlap(Box1.y1, Box1.y2, Box2.y1, Box2.y2))
-
+function Box.inside_box(x, y, box) --check if a point (x0, y0) is inside rect (x, y, w, h)
+	return x >= box.x1 and x <= box.x2 and y >= box.y1 and y <= box.y2
 end
+
+function Box.collides(box1, box2)
+	return overlap(box1.x1, box1.x2, box2.x1, box2.x2) and overlap(box1.y1, box1.y2, box2.y1, box2.y2)
+end
+
+--function Box.hit_edges(x0, y0, d, x, y, w, h) --returns hit, left, top, right, bottom
+function Box.collidingEdge(box1, box2) --returns hit, left, top, right, bottom
+	local left = false 
+	local right = false 
+	local top = false 
+	local bottom = false 
+	if box1.y1 <= box2.y2 and box1.y2 >= box2.y2 and box2.x2 > box1.x1 and box2.x1 < box1.x2 then top = true end
+	if box1.y2 >= box2.y1 and box1.y1 <= box2.y1 and box2.x2 > box1.x1 and box2.x1 < box1.x2 then bottom = true end
+	if box1.x1 <= box2.x2 and box1.x2 >= box2.x2 and box2.y2 > box1.y1 and box2.y1 < box1.y2 then left = true end
+	if box1.x2 >= box2.x1 and box1.x1 <= box2.x1 and box2.y2 > box1.y1 and box2.y1 < box1.y2 then right = true end
+	return { top = top, bottom = bottom, left = left, right = right }
+end
+	 	
+--[[	
+	if hit(x0, y0, offset(d, x, y, 0, 0)) then
+		return true, true, true, false, false
+	elseif hit(x0, y0, offset(d, x + w, y, 0, 0)) then
+		return true, false, true, true, false
+	elseif hit(x0, y0, offset(d, x, y + h, 0, 0)) then
+		return true, true, false, false, true
+	elseif hit(x0, y0, offset(d, x + w, y + h, 0, 0)) then
+		return true, false, false, true, true
+	elseif hit(x0, y0, offset(d, x, y, w, 0)) then
+		return true, false, true, false, false
+	elseif hit(x0, y0, offset(d, x, y + h, w, 0)) then
+		return true, false, false, false, true
+	elseif hit(x0, y0, offset(d, x, y, 0, h)) then
+		return true, true, false, false, false
+	elseif hit(x0, y0, offset(d, x + w, y, 0, h)) then
+		return true, false, false, true, false
+	end
+	return false, false, false, false, false
+]]
 
 return Box
 

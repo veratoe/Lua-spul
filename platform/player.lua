@@ -38,7 +38,8 @@ Player = {
 	vx = 0,
 	vy = 0,
 
-	state = states.idle
+	state = states.idle,
+	box = Box.getBoundingBox(100, 100, 30, 40)
 }
 
 function Player.setState(state)
@@ -70,6 +71,7 @@ end
 
 function Player.stop()
 	if (Player.state ~= states.in_air) then
+		Player.vx = 0
 		Player.setState(states.idle)
 	end
 end
@@ -78,18 +80,23 @@ function Player.update()
 
 	Player.x = Player.x + Player.vx
 	Player.y = Player.y + Player.vy
+	
+	Player.box = Box.getBoundingBox(Player.x, Player.y, 30, 40)
 
 	onExecuteState(Player.state)
 end
 
 function Player.draw()
-	love.graphics.rectangle("fill", Player.x, Player.y, 10, 10)
+	rectangle = Box.toRectangle(Player.box)
+	love.graphics.setColor(.75, .95, .89)
+	love.graphics.rectangle("line", rectangle.x, rectangle.y, rectangle.w, rectangle.h)
 end
 
 function onExecuteState(state)
 
 	if state == states.idle or state == states.running then
-		if World.getTile(Player.x, Player.y + 1) ~= 1 then 
+		if not World.collidesTop(Player.box) then 
+			print("wooops we vallen")
 			Player.y = math.ceil(Player.y / World.tile_size) * World.tile_size
 			Player.setState(states.in_air)
 		end
@@ -100,14 +107,21 @@ function onExecuteState(state)
 
 	elseif state == states.in_air then
 		Player.vy = Player.vy + 0.35
-		if World.getTile(Player.x, Player.y) == 1 then 
+		if World.collidesTop(Player.box) then 
 			Player.y = math.floor(Player.y / World.tile_size) * World.tile_size
 			Player.vy = 0 
 			Player.setState(states.idle)
 		end
 
+		if World.collidesBottom(Player.top) then 
+			print("AUW!");
+			if Player.vy < 0 then Player.vy = Player.vy * -1 end
+		end
+
 	elseif state == states.running then 
-		Player.vx = Player.direction == Player.directions.left and -1 or 1
+		Player.vx = Player.direction == Player.directions.left and -2 or 2
+		if World.collidesLeft(Player.box) and Player.vx > 0 then Player.vx = 0 end
+		if World.collidesRight(Player.box) and Player.vx < 0 then Player.vx = 0 end
 	end
 end
 
@@ -124,9 +138,9 @@ end
 function onEnterState(state)
 	
 	if state == states.idle then
-		Player.vx = 0
+		--Player.vx = 0
 	elseif state == states.jump then
-		Player.vy = -4
+		Player.vy = - 6
 		Player.setState(states.in_air)
 	end
 
