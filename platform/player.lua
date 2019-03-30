@@ -1,6 +1,9 @@
 local directions = { left =  0, right =  1}
 local states = { idle = 0, in_air = 1, running = 2, jump = 3 }
 
+function lerp (a, b, t)
+	return a + (b-a) * t
+end
 --local function canReachState(state)
 --	if (state == states.in_air) then
 --		for _, allowed_state in pairs({ states.idle, states.running, states.jump }) do 
@@ -38,6 +41,9 @@ Player = {
 	vx = 0,
 	vy = 0,
 
+	max_speed = 2,
+	acc_x = 1,
+
 	is_in_air = false,
 	box = Box.getBoundingBox(100, 100, 30, 40)
 }
@@ -55,33 +61,6 @@ Player = {
 --	for i, s in pairs(states) do if s == Player.state then return i end end
 --end
 
-function Player.jump() 
-	if not Player.is_in_air then 
-		Player.vy = -6
-		Player.is_in_air = true
-	end
-	--Player.setState(states.jump)
-end
-
-function Player.moveRight() 
-	Player.direction = directions.right
-	Player.vx = 2
-	--Player.setState(states.running)
-end
-
-function Player.moveLeft() 
-	Player.vx = -2
-	Player.direction = directions.left
-	--Player.setState(states.running)
-end
-
-function Player.stop()
-	Player.vx = 0
-	--if (Player.state ~= states.in_air) then
-	--	Player.setState(states.idle)
-	--end
-end
-
 function Player.update() 
 
 	Player.box = Box.getBoundingBox(Player.x, Player.y, 30, 40)
@@ -91,20 +70,52 @@ function Player.update()
 		if (Player.vy > 0 ) then Player.vy = 0 end
 		Player.is_in_air = false
 	else
-		print("we valleeeenn")
 		Player.is_in_air = true
 		Player.vy = Player.vy + 0.25
 	end
 
 	if World.collidesBottom(Player.box) then 
-		print("AUW!");
 		if Player.vy < 0 then Player.vy = Player.vy * -1 end
 	end
 
-	if World.collidesLeft(Player.box) and Player.vx > 0 then Player.vx = 0 end
-	if World.collidesRight(Player.box) and Player.vx < 0 then Player.vx = 0 end
 
-	if Player.vy < 0 then Player.vy = Player.vy + 0.35 end
+	if love.keyboard.isDown("d") then
+		if (Player.vx < Player.max_speed) then Player.vx = Player.vx + Player.acc_x  end
+	end
+
+	if love.keyboard.isDown("a") then
+		if (Player.vx > -1 * Player.max_speed) then Player.vx = Player.vx - Player.acc_x  end
+	end
+
+	if love.keyboard.isDown("space") and not Player.is_in_air then 
+		Player.vy = -6
+		Player.is_in_air = true
+	end
+
+	if not love.keyboard.isDown("d") and not love.keyboard.isDown("a") and math.abs(Player.vx) > 0 then 
+		if Player.vx < 0 then 
+			Player.vx = Player.vx + 0.01
+			if Player.vx > 0 then Player.vx = 0 end
+		else 
+			Player.vx = Player.vx - 0.01
+			if Player.vx < 0 then Player.vx = 0 end
+		end
+	end
+
+	if World.collidesLeft(Player.box) and Player.vx > 0 then 
+		Player.vx = 0 
+		box = World.findCollidingBoxes(Player.box, "left")[1]
+		Box.snap(World.findCollidingBoxes(Player.box, "left")[1], Player.box)
+		Player.x = Player.box.x1
+		Player.y = Player.box.y1
+	end
+	if World.collidesRight(Player.box) and Player.vx < 0 then 
+		Player.vx = 0 
+		box = World.findCollidingBoxes(Player.box, "right")[1]
+		Box.snap(World.findCollidingBoxes(Player.box, "right")[1], Player.box)
+		Player.x = Player.box.x1
+		Player.y = Player.box.y1
+	end
 
 	Player.x = Player.x + Player.vx
 	Player.y = Player.y + Player.vy

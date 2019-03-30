@@ -19,6 +19,24 @@ function Box.collides(box1, box2)
 	return overlap(box1.x1, box1.x2, box2.x1, box2.x2) and overlap(box1.y1, box1.y2, box2.y1, box2.y2)
 end
 
+-- snaps box2 to box1 edge
+function Box.snap(box1, box2)
+	local edges = Box.collidingEdge(box1, box2)
+	if edges.right then 
+		delta = box1.x2 - box2.x1
+		print(delta)
+		box2.x1 = box2.x1 + delta
+		box2.x2 = box2.x2 + delta
+	end
+
+	if edges.left then 
+		delta = box2.x2 - box1.x1
+		box2.x1 = box2.x1 - delta
+		box2.x2 = box2.x2 - delta
+	end
+end
+		
+
 --function Box.hit_edges(x0, y0, d, x, y, w, h) --returns hit, left, top, right, bottom
 function Box.collidingEdge(box1, box2) --returns hit, left, top, right, bottom
 	local left = false 

@@ -4,19 +4,19 @@ Controls = {}
 function Controls.update()
 
 	if love.keyboard.isDown("d") then
-		Player.moveRight()
+		--Player.moveRight()
 	end	
 
 	if love.keyboard.isDown("a") then
-		Player.moveLeft()
+		--Player.moveLeft()
 	end	
 
 	if love.keyboard.isDown("d")  == false and love.keyboard.isDown("a")  == false then 
-		Player.stop()
+		--Player.stop()
 	end
 
 	if love.keyboard.isDown("space") then
-		Player.jump()
+		--Player.jump()
 	end	
 end
 

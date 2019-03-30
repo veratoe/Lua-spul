@@ -31,13 +31,6 @@ function World.draw()
 		end
 	end
 
---[[
-	love.graphics.setColor(1, .5, .5)
-	for _, box in ipairs(World.findCollidingBoxes(Player.box)) do
-		rectangle = Box.toRectangle(box)	
-		love.graphics.rectangle("line", rectangle.x, rectangle.y, rectangle.w, rectangle.h)
-	end
-]]
 	World.findCollidingBoxes(Player.box)
 
 	love.graphics.draw(World.collisions)
@@ -69,7 +62,7 @@ function World.collidesBottom(box)
 	return collidesBottom
 end
 
-function World.findCollidingBoxes(box)
+function World.findCollidingBoxes(box, edge)
 	
 	collidesLeft = false
 	collidesRight = false
@@ -87,17 +80,17 @@ function World.findCollidingBoxes(box)
 				if edges.right then collidesRight = true end
 				if edges.top then collidesTop = true end
 				if edges.bottom then collidesBottom = true end
-				--print("left: " .. (edges.left and 1 or 0) .. " right: " .. (edges.right and 1 or 0 ).. " top: " .. (edges.top and 1 or 0) .. " bottom: " .. (edges.bottom and 1 or 0))
 				love.graphics.setColor(0, 1, 0)
 				love.graphics.rectangle("fill", x * World.tile_size, y * World.tile_size, World.tile_size, World.tile_size)
-				table.insert(boxes, World.boxes[x][y])
+				if edge == nil or edge == "left" and edges.left or edge == "right" and edges.right then
+					table.insert(boxes, World.boxes[x][y])
+				end
 			end
 		end
 	end
 
 	love.graphics.setCanvas()
 
-	--print("Left: " .. (collidesLeft and 1 or 0) .. ", right: " .. (collidesRight and 1 or 0))
 	return boxes
 end
 
