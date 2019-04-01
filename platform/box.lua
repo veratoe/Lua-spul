@@ -24,7 +24,6 @@ function Box.snap(box1, box2)
 	local edges = Box.collidingEdge(box1, box2)
 	if edges.right then 
 		delta = box1.x2 - box2.x1
-		print(delta)
 		box2.x1 = box2.x1 + delta
 		box2.x2 = box2.x2 + delta
 	end

@@ -1,5 +1,7 @@
 local directions = { left =  0, right =  1}
 local states = { idle = 0, in_air = 1, running = 2, jump = 3 }
+local edges
+local boxes
 
 function lerp (a, b, t)
 	return a + (b-a) * t
@@ -64,8 +66,11 @@ Player = {
 function Player.update() 
 
 	Player.box = Box.getBoundingBox(Player.x, Player.y, 30, 40)
+	boxes, edges = World.findCollidingBoxes(Player.box)
 
-	if World.collidesTop(Player.box) then 
+	love.graphics.draw(love.graphics.newText(love.graphics.getFont(), edges.left and 1 or 0 .. ":" .. Player.y), 10, 55)
+
+	if edges.top then 
 		Player.y = math.floor(Player.y / World.tile_size) * World.tile_size
 		if (Player.vy > 0 ) then Player.vy = 0 end
 		Player.is_in_air = false
@@ -74,7 +79,7 @@ function Player.update()
 		Player.vy = Player.vy + 0.25
 	end
 
-	if World.collidesBottom(Player.box) then 
+	if edges.bottom then 
 		if Player.vy < 0 then Player.vy = Player.vy * -1 end
 	end
 
@@ -102,16 +107,19 @@ function Player.update()
 		end
 	end
 
-	if World.collidesLeft(Player.box) and Player.vx > 0 then 
+
+	if edges.left and Player.vx > 0 then 
 		Player.vx = 0 
 		box = World.findCollidingBoxes(Player.box, "left")[1]
+		if World.findCollidingBoxes(Player.box, "left")[1] == nil then print("WUBBEL") end
 		Box.snap(World.findCollidingBoxes(Player.box, "left")[1], Player.box)
 		Player.x = Player.box.x1
 		Player.y = Player.box.y1
 	end
-	if World.collidesRight(Player.box) and Player.vx < 0 then 
+	if edges.right  and Player.vx < 0 then 
 		Player.vx = 0 
 		box = World.findCollidingBoxes(Player.box, "right")[1]
+		if World.findCollidingBoxes(Player.box, "right")[1] == nil then print("WUBBEL") end
 		Box.snap(World.findCollidingBoxes(Player.box, "right")[1], Player.box)
 		Player.x = Player.box.x1
 		Player.y = Player.box.y1
@@ -125,6 +133,11 @@ function Player.draw()
 	rectangle = Box.toRectangle(Player.box)
 	if Player.direction == directions.left then love.graphics.setColor(.75, .95, .89) else love.graphics.setColor(.75, .25, .49) end
 	love.graphics.rectangle("line", rectangle.x, rectangle.y, rectangle.w, rectangle.h)
+
+	local boxes, edges = World.findCollidingBoxes(Player.box)
+	love.graphics.setColor(.75, .95, 89)
+	love.graphics.draw(love.graphics.newText(love.graphics.getFont(), 
+		"left: " .. (edges.left and 1 or 0) .. ":" ..  "right: " .. (edges.right and 1 or 0) .. ":" .. "top: " .. (edges.top and 1 or 0) .. ":" ..  "bottom: " .. (edges.bottom and 1 or 0) .. ":" ), 10, 55)
 end
 
 --function onExecuteState(state)

@@ -20,6 +20,10 @@ function World.create()
 	end
 end
 
+function World.update() 
+
+end
+
 function World.draw()
 
 	for x = 0, World.dimensions.x do
@@ -39,29 +43,6 @@ end
 World.canvas = love.graphics.newCanvas(800, 600)
 World.collisions = love.graphics.newCanvas(800, 600)
 
--- even bruut fors
-local collidesLeft
-local collidesRight
-local collidesTop
-local collidesBottom
-
-function World.collidesLeft(box)
-	return collidesLeft
-end
-
-function World.collidesRight(box)
-	return collidesRight
-end
-
-
-function World.collidesTop(box)
-	return collidesTop
-end
-
-function World.collidesBottom(box)
-	return collidesBottom
-end
-
 function World.findCollidingBoxes(box, edge)
 	
 	collidesLeft = false
@@ -72,17 +53,15 @@ function World.findCollidingBoxes(box, edge)
 	love.graphics.setCanvas(World.collisions)
 	love.graphics.clear()
 	boxes = {}
+	edges = { left= false, right= false, top= false, bottom= false }
+
 	for x = 0, World.dimensions.x do
 		for y = 0, World.dimensions.y do
 			if Box.collides(World.boxes[x][y], box) and World.grid[x][y] == 1 then
 				edges = Box.collidingEdge(World.boxes[x][y], box)
-				if edges.left then collidesLeft = true end
-				if edges.right then collidesRight = true end
-				if edges.top then collidesTop = true end
-				if edges.bottom then collidesBottom = true end
 				love.graphics.setColor(0, 1, 0)
 				love.graphics.rectangle("fill", x * World.tile_size, y * World.tile_size, World.tile_size, World.tile_size)
-				if edge == nil or edge == "left" and edges.left or edge == "right" and edges.right then
+				if edge == nil or (edge == "left" and edges.left) or (edge == "right" and edges.right) or (edge =="top" and edges.top) or (edge == "bottom" and edges.bottom) then
 					table.insert(boxes, World.boxes[x][y])
 				end
 			end
@@ -91,7 +70,7 @@ function World.findCollidingBoxes(box, edge)
 
 	love.graphics.setCanvas()
 
-	return boxes
+	return boxes, edges
 end
 
 
