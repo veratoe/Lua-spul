@@ -45,20 +45,19 @@ World.collisions = love.graphics.newCanvas(800, 600)
 
 function World.findCollidingBoxes(box, edge)
 	
-	collidesLeft = false
-	collidesRight = false
-	collidesTop = false
-	collidesBottom = false
-	
 	love.graphics.setCanvas(World.collisions)
 	love.graphics.clear()
 	boxes = {}
-	edges = { left= false, right= false, top= false, bottom= false }
+	collidingEdges = { left= false, right= false, top= false, bottom= false }
 
 	for x = 0, World.dimensions.x do
 		for y = 0, World.dimensions.y do
 			if Box.collides(World.boxes[x][y], box) and World.grid[x][y] == 1 then
 				edges = Box.collidingEdge(World.boxes[x][y], box)
+				if edges.left then collidingEdges.left = true end
+				if edges.right then collidingEdges.right = true end
+				if edges.top then collidingEdges.top = true end
+				if edges.bottom then collidingEdges.bottom = true end
 				love.graphics.setColor(0, 1, 0)
 				love.graphics.rectangle("fill", x * World.tile_size, y * World.tile_size, World.tile_size, World.tile_size)
 				if edge == nil or (edge == "left" and edges.left) or (edge == "right" and edges.right) or (edge =="top" and edges.top) or (edge == "bottom" and edges.bottom) then
@@ -70,7 +69,7 @@ function World.findCollidingBoxes(box, edge)
 
 	love.graphics.setCanvas()
 
-	return boxes, edges
+	return boxes, collidingEdges
 end
 
 

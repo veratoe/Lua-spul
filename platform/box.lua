@@ -20,32 +20,49 @@ function Box.collides(box1, box2)
 end
 
 -- snaps box2 to box1 edge
-function Box.snap(box1, box2)
-	local edges = Box.collidingEdge(box1, box2)
-	if edges.right then 
-		delta = box1.x2 - box2.x1
+function Box.snap(box1, box2, edge)
+	if edge == "right" then 
+		local delta = box1.x2 - box2.x1
 		box2.x1 = box2.x1 + delta
 		box2.x2 = box2.x2 + delta
 	end
 
-	if edges.left then 
-		delta = box2.x2 - box1.x1
+	if edge == "left" then 
+		local delta = box2.x2 - box1.x1
 		box2.x1 = box2.x1 - delta
 		box2.x2 = box2.x2 - delta
 	end
+
+	if edge == "top" then 
+		local delta = box1.y1 - box2.y2 
+		box2.y1 = box2.y1 + delta
+		box2.y2 = box2.y2 + delta
+	end
+
+	if edge == "bottom" then 
+		local delta = box1.y2 - box2.y1
+		box2.y1 = box2.y1 + delta
+		box2.y2 = box2.y2 + delta
+	end
+
+	return box2
 end
 		
 
 --function Box.hit_edges(x0, y0, d, x, y, w, h) --returns hit, left, top, right, bottom
 function Box.collidingEdge(box1, box2) --returns hit, left, top, right, bottom
-	local left = false 
-	local right = false 
+	-- iets slechts om edge detectie te tweaken
+	local offset = 0
+
 	local top = false 
 	local bottom = false 
-	if box1.y1 <= box2.y2 and box1.y2 >= box2.y2 and box2.x2 > box1.x1 and box2.x1 < box1.x2 then top = true end
-	if box1.y2 >= box2.y1 and box1.y1 <= box2.y1 and box2.x2 > box1.x1 and box2.x1 < box1.x2 then bottom = true end
-	if box1.x1 <= box2.x2 and box1.x2 >= box2.x2 and box2.y2 > box1.y1 and box2.y1 < box1.y2 then left = true end
-	if box1.x2 >= box2.x1 and box1.x1 <= box2.x1 and box2.y2 > box1.y1 and box2.y1 < box1.y2 then right = true end
+	local left = false;
+	local right = false;
+
+	if box1.y1 <= box2.y2 and box1.y2 >= box2.y2 and box2.x2 > box1.x1 + offset and box2.x1 + offset < box1.x2 then top = true end
+	if box1.y2 >= box2.y1 and box1.y1 <= box2.y1 and box2.x2 > box1.x1 + offset and box2.x1 + offset < box1.x2 then bottom = true end
+	if box1.x1 <= box2.x2 and box1.x2 >= box2.x2 and box2.y2 > box1.y1 + offset and box2.y1 + offset < box1.y2 then left = true end
+	if box1.x2 >= box2.x1 and box1.x1 <= box2.x1 and box2.y2 > box1.y1 + offset and box2.y1 + offset < box1.y2 then right = true end
 	return { top = top, bottom = bottom, left = left, right = right }
 end
 	 	

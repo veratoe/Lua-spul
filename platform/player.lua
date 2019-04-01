@@ -39,7 +39,7 @@ end
 Player = {
 	direction = directions.right,
 	x = 100,
-	y = 100,
+	y = 200,
 	vx = 0,
 	vy = 0,
 
@@ -65,15 +65,18 @@ Player = {
 
 function Player.update() 
 
-	Player.box = Box.getBoundingBox(Player.x, Player.y, 30, 40)
 	boxes, edges = World.findCollidingBoxes(Player.box)
 
 	love.graphics.draw(love.graphics.newText(love.graphics.getFont(), edges.left and 1 or 0 .. ":" .. Player.y), 10, 55)
 
 	if edges.top then 
-		Player.y = math.floor(Player.y / World.tile_size) * World.tile_size
-		if (Player.vy > 0 ) then Player.vy = 0 end
-		Player.is_in_air = false
+		if (Player.vy > 0) then
+			Player.box = Box.snap(World.findCollidingBoxes(Player.box, "top")[1], Player.box, "top")
+			Player.x = Player.box.x1
+			Player.y = Player.box.y1
+			Player.vy = 0
+			Player.is_in_air = false
+		end
 	else
 		Player.is_in_air = true
 		Player.vy = Player.vy + 0.25
@@ -99,10 +102,10 @@ function Player.update()
 
 	if not love.keyboard.isDown("d") and not love.keyboard.isDown("a") and math.abs(Player.vx) > 0 then 
 		if Player.vx < 0 then 
-			Player.vx = Player.vx + 0.01
+			Player.vx = Player.vx + 0.2
 			if Player.vx > 0 then Player.vx = 0 end
 		else 
-			Player.vx = Player.vx - 0.01
+			Player.vx = Player.vx - 0.2
 			if Player.vx < 0 then Player.vx = 0 end
 		end
 	end
@@ -110,23 +113,23 @@ function Player.update()
 
 	if edges.left and Player.vx > 0 then 
 		Player.vx = 0 
-		box = World.findCollidingBoxes(Player.box, "left")[1]
-		if World.findCollidingBoxes(Player.box, "left")[1] == nil then print("WUBBEL") end
-		Box.snap(World.findCollidingBoxes(Player.box, "left")[1], Player.box)
+		Player.box = Box.snap(World.findCollidingBoxes(Player.box, "left")[1], Player.box, "left")
 		Player.x = Player.box.x1
 		Player.y = Player.box.y1
 	end
-	if edges.right  and Player.vx < 0 then 
+	if edges.right and Player.vx < 0 then 
 		Player.vx = 0 
 		box = World.findCollidingBoxes(Player.box, "right")[1]
 		if World.findCollidingBoxes(Player.box, "right")[1] == nil then print("WUBBEL") end
-		Box.snap(World.findCollidingBoxes(Player.box, "right")[1], Player.box)
+		--Box.snap(box, Player.box, "right")
 		Player.x = Player.box.x1
 		Player.y = Player.box.y1
 	end
 
 	Player.x = Player.x + Player.vx
 	Player.y = Player.y + Player.vy
+
+	Player.box = Box.getBoundingBox(Player.x, Player.y, 30, 40)
 end
 
 function Player.draw()
