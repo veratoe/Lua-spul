@@ -27,4 +27,8 @@ function love.keypressed(key)
 	end
 end
 
+function love.wheelmoved(x,y)
+	Camera:zoom(y)
+end
+
 return Controls
