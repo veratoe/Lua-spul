@@ -20,11 +20,13 @@ function Animation:new(spriteSheet, width, height, duration)
 		self.quads[i] = love.graphics.newQuad(i * width, 0, width, height, spriteSheet:getDimensions())
 	end
 
+	Hooks.bind("love_update", function (...) self:update(...) end)
+
 	return o
 
 end
 
-function Animation:update(dt) 
+function Animation:update(dt, wub) 
 
 	self.time = self.time + dt
 	if self.time >= self.frame_duration then 
