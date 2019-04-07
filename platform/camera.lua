@@ -1,7 +1,7 @@
 Camera = {
 	scale = 1,
 	x = 400,
-	y = 300 
+	y = 1200 
 }
 
 function Camera:apply()

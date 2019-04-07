@@ -1,28 +1,30 @@
-local states = { idle = 0, in_air = 1, running = 2, jump = 3 }
+local states = { idle = 0, in_air = 1, running = 2, jump = 3, landing = 4 }
 local edges
 local boxes
 
 Player = {
 	direction = 1, 		-- 1 naar rechts, -1 naar links
 	x = 100,
-	y = 200,
+	y = 1200,
 	vx = 0,
 	vy = 0,
 
-	max_speed = 2,
+	max_speed = 10,
 	acc_x = 3,
 
 	box,
 
 	state = 0,
 
-	canvas = love.graphics.newCanvas(800, 600)
+	canvas = love.graphics.newCanvas(800, 600),
+
 }
 
 
 function canReachState(state)
 	if (state == states.in_air) then
 		for _, allowed_state in pairs({ states.idle, states.running, states.jump }) do 
+			print(state)
 			if Player.state == allowed_state then return true end
 		end
 		return false
@@ -33,7 +35,7 @@ function canReachState(state)
 		return false
 		
 	elseif (state == states.idle) then
-		for _, allowed_state in pairs({ states.in_air, states.running }) do 
+		for _, allowed_state in pairs({ states.in_air, states.running, states.landing }) do 
 			if Player.state == allowed_state then return true end
 		end
 		return false
@@ -43,9 +45,13 @@ function canReachState(state)
 			if Player.state == allowed_state then return true end
 		end
 		return false
-	end
+	elseif (state == states.landing) then 
+		for _, allowed_state in pairs({ states.in_air }) do 
+			if Player.state == allowed_state then return true end
+		end
+		return false
 
-	print("DIT MAGE JE NIET ZIEN!!")
+	end
 
 end
 
@@ -74,8 +80,8 @@ end
 function Player.load() 
 
 	image_idle = love.graphics.newImage("assets/poppetje.png")
-	print(image_idle:getDimensions())
 	Player.resetBoundingBox()
+	PlayerDust.create()
 
 	for i = 0, 3 do
 		images_running[i] = love.graphics.newImage("assets/poppetje_rennen" .. i .. ".png")
@@ -84,7 +90,7 @@ function Player.load()
 	image_in_air = love.graphics.newImage("assets/poppetje_in_air.png")
 end
 
-function Player.update() 
+function Player.update(dt) 
 
 	boxes, edges = World.findCollidingBoxes(Player.box)
 
@@ -96,7 +102,7 @@ function Player.update()
 			Player.x = Player.box.x1
 			Player.y = Player.box.y1
 			Player.vy = 0
-			Player.setState(states.idle)
+			Player.setState(states.landing)
 		end
 	else
 		Player.setState(states.in_air)
@@ -138,13 +144,13 @@ function Player.update()
 	boxes, edges = World.findCollidingBoxes(Player.box)
 
 	if edges.left and Player.vx > 0 then 
-		Player.vx = 0 
+		--Player.vx = 0 
 		Player.box = Box.snap(World.findCollidingBoxes(Player.box, "left")[1], Player.box, "left")
 		Player.x = Player.box.x1
 		Player.y = Player.box.y1
 	end
 	if edges.right and Player.vx < 0 then 
-		Player.vx = 0 
+		--Player.vx = 0 
 		Player.box = Box.snap(World.findCollidingBoxes(Player.box, "right")[1], Player.box, "right")
 		Player.x = Player.box.x1
 		Player.y = Player.box.y1
@@ -156,15 +162,21 @@ function Player.update()
 	Player.resetBoundingBox()
 
 	-- update camera
-	local cameraOffsetX = Player.x - Camera.x
-	local cameraOffsetY = Player.y - Camera.y
+	local cameraOffsetX = Player.x - Camera.x + 300
+	local cameraOffsetY = Player.y - Camera.y + 100
 
+	Camera:move(7, 0)
+	if cameraOffsetX < -150 then 
+		Player.x = Player.x - (cameraOffsetX + 140)
+	end
+
+	
 	if cameraOffsetX > 20 then
-		Camera:move(Utils.lerp(0, cameraOffsetX, 0.1), 0)
+		--Camera:move(Utils.lerp(0, cameraOffsetX, 0.1), 0)
 	end
 
 	if cameraOffsetX < -20 then
-		Camera:move(Utils.lerp(0, cameraOffsetX, 0.1), 0)
+	--	Camera:move(Utils.lerp(0, cameraOffsetX, 0.1), 0)
 	end
 
 	if cameraOffsetY < -50 then
@@ -175,8 +187,9 @@ function Player.update()
 		Camera:move(0, Utils.lerp(0, cameraOffsetY, 0.1))
 	end
 
-
+	PlayerDust.update(dt, Player.x + 40, Player.y + 130)
 	Player.whileInState(Player.state)
+
 end
 
 function Player.draw()
@@ -184,13 +197,13 @@ function Player.draw()
 	love.graphics.setCanvas(Player.canvas)
 	love.graphics.clear()
 
+	PlayerDust.draw()
+
 	rectangle = Box.toRectangle(Player.box)
-	--if Player.direction == directions.left then love.graphics.setColor(.75, .95, .89) else love.graphics.setColor(.75, .25, .49) end
-	--love.graphics.rectangle("line", rectangle.x, rectangle.y, rectangle.w, rectangle.h)
 
 	if Player.state == states.running then 
 		local int, fract = math.modf(love.timer.getTime())
-		local index = math.mod(math.floor(fract * 10), 4)
+		local index = math.mod(math.floor(fract * 20), 4)
 		love.graphics.draw(images_running[index], Player.x, Player.y, 0, 0.5 * Player.direction, 0.5, Player.direction == -1 and image_idle:getDimensions() or 0, 0)
 
 	elseif Player.state == states.in_air then 
@@ -200,22 +213,25 @@ function Player.draw()
 		love.graphics.draw(image_idle, Player.x, Player.y, 0, 0.5 * Player.direction, 0.5, Player.direction == -1 and image_idle:getDimensions() or 0, 0)
 	end
 	
-
-	-- local boxes, edges = World.findCollidingBoxes(Player.box)
-	--love.graphics.setColor(.75, .95, 89)
-	--love.graphics.draw(love.graphics.newText(love.graphics.getFont(), 
-	--	"left: " .. (edges.left and 1 or 0) .. ":" ..  "right: " .. (edges.right and 1 or 0) .. ":" .. "top: " .. (edges.top and 1 or 0) .. ":" ..  "bottom: " .. (edges.bottom and 1 or 0) .. ":" ), 10, 55)
-
 	love.graphics.setCanvas()
 end
 
 function Player.whileInState(state)
+	
+	PlayerDust.pause()
 
-	-- .....
-
-	if state == states.running then
-		if Player.vx == 0 then Player.setState(states.idle) end
+	if state == states.landing or state == states.running then
+		PlayerDust.start()
 	end
+
+	if state == states.landing then 
+		Player.setState(states.idle)
+	end
+
+	if state == states.running and Player.vx == 0 then 
+		Player.setState(states.idle)
+	end
+
 end
 
 function onLeaveState(oldState, newState)
@@ -230,7 +246,7 @@ function onEnterState(state)
 		-- ...
 
 	elseif state == states.jump then
-		Player.vy = - 10
+		Player.vy = - 15
 		Player.setState(states.in_air)
 	end
 
