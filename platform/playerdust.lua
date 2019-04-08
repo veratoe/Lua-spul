@@ -5,22 +5,26 @@ local image
 
 function PlayerDust.create()
 
-	image = love.graphics.newImage("assets/circle.png");
+	image = love.graphics.newImage("assets/blaadje1.png");
 	ps = love.graphics.newParticleSystem(image, 500);
-	ps:setParticleLifetime(0, 1.8)
-	ps:setLinearAcceleration(0, -100, 50, 100)
-	ps:setDirection(2 * math.pi)
-	ps:setRadialAcceleration(10, 200)
-	--ps:setSpeed(10, 30)
-	ps:setSizes(0.3, 1.4)
+	ps:setParticleLifetime(1, 2)
+	ps:setLinearAcceleration(-5, 200, 5, 200)
+	ps:setDirection(math.pi, 2 * math.pi)
+	ps:setSpeed(100, 180)
+	ps:setSizes(0.6, 0.8)
+	ps:setSpread(2 * math.pi)
+	ps:setSpin(0, 6 * math.pi)
+	ps:setColors(1, 1, 1, 1.0, 1, 1, 1, 0)
+--[[
 	ps:setColors(
 		142/255, 110/255, 24/255, 0.8,
 		112/255, 82/255, 0/255, 0.1,
 		142/255, 110/255, 24/255, 0.0,
 		1.0, 0.5, 0.5, 0.0
 	)
+]]--
 	--ps:moveTo(x, y)
-	ps:setEmissionRate(100)
+	ps:setEmissionRate(15)
 
 end
 
@@ -42,8 +46,8 @@ function PlayerDust.update(dt, x, y)
 end
 
 function PlayerDust.draw()
-	love.graphics.setCanvas()
-	love.graphics.setShader()
+	--love.graphics.setCanvas()
+	--love.graphics.setShader()
 
 	love.graphics.draw(ps)
 

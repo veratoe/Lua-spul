@@ -7,6 +7,7 @@ Controls = require "controls"
 World = require "world"
 Background = require "background"
 PlayerDust = require "playerdust"
+Whisps = require "whisps"
 
 math.randomseed(os.time())
 
@@ -15,6 +16,7 @@ function love.load()
 	World.load()
 	World.create()
 	Player.load()
+Whisps.load()
 
 end
 
@@ -22,7 +24,12 @@ function love.draw()
 
 	-- background
 	Background.draw()
+	love.graphics.setColor(1, 1, 1)
 	love.graphics.draw(Background.canvas)
+
+	Whisps.draw()
+	love.graphics.setColor(1, 1, 1)
+	love.graphics.draw(Whisps.canvas)
 
 	-- poppetje
 	Camera:apply()
@@ -51,5 +58,6 @@ end
 function love.update(dt)
 	Player.update(dt)
 	Background.update(dt)
+	Whisps.update(dt)
 	Controls.update(dt)
 end

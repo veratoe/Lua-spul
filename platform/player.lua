@@ -24,12 +24,11 @@ Player = {
 function canReachState(state)
 	if (state == states.in_air) then
 		for _, allowed_state in pairs({ states.idle, states.running, states.jump }) do 
-			print(state)
 			if Player.state == allowed_state then return true end
 		end
 		return false
 	elseif (state == states.running) then
-		for _, allowed_state in pairs({ states.idle }) do 
+		for _, allowed_state in pairs({ states.idle, states.landing }) do 
 			if Player.state == allowed_state then return true end
 		end
 		return false
@@ -197,7 +196,7 @@ function Player.draw()
 	love.graphics.setCanvas(Player.canvas)
 	love.graphics.clear()
 
-	PlayerDust.draw()
+	--PlayerDust.draw()
 
 	rectangle = Box.toRectangle(Player.box)
 
@@ -225,7 +224,7 @@ function Player.whileInState(state)
 	end
 
 	if state == states.landing then 
-		Player.setState(states.idle)
+		Player.setState(Player.vx == 0 and states.idle or states.running)
 	end
 
 	if state == states.running and Player.vx == 0 then 

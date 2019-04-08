@@ -12,10 +12,12 @@ function Background.load()
 
 	for i = 0, num_clouds do 
 		Background.clouds[i] = {
-			x = 840,
+			x = math.random() * 800,
 			y = math.random() * 300,
 			vx = math.random() * 2,
-			scale = math.ceil(math.random() * 2)
+			scale = 0.3 + math.random() * 0.7,
+			--opacity = 0.8 + math.random() * 0.2
+			opacity = 1.0 --0.8 + math.random() * 0.2
 		}
 	end
 	
@@ -25,7 +27,7 @@ function Background.update()
 
 	for _, cloud in ipairs(Background.clouds) do
 		cloud.x = cloud.x - cloud.vx
-		if cloud.x < -200 then 
+		if cloud.x < -400 * cloud.scale then 
 			cloud.x = 840;
 			cloud.y = math.random() * 300
 			cloud.vx = math.random() * 2 
@@ -37,15 +39,16 @@ end
 function Background.draw()
 
 	love.graphics.setCanvas(Background.canvas)
-	love.graphics.setColor(123/255, 227/255, 252/255)
+	love.graphics.setColor(123/255, 227/255, 252/255, 1.0)
 	love.graphics.rectangle("fill", 0, 0, 800, 600)
 
-	love.graphics.setColor(1, 1, 1)
 	love.graphics.setBlendMode("lighten", "premultiplied")
 	for _, cloud in ipairs(Background.clouds) do
-		love.graphics.draw(cloudImage, cloud.x, cloud.y, 0, 0.5, 0.5)
+		love.graphics.setColor(1, 1, 1)
+		love.graphics.draw(cloudImage, cloud.x, cloud.y, 0, cloud.scale)
 	end
-	love.graphics.setBlendMode("alpha")
+
+	love.graphics.setBlendMode("alpha", "alphamultiply")
 
 	love.graphics.setCanvas()
 

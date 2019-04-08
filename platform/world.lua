@@ -20,30 +20,33 @@ end
 function World.create()
 
 	local gap = 0
+	local has_gap 
 	local y_delta = 0
 
 	for x = 0, World.dimensions.x do
 		World.grid[x] = {}
 		World.boxes[x] = {}
+
+		has_gap = false
+
 		for y = 0, World.dimensions.y do
-			--if y > 10 then
-			--	World.grid[x][y] = math.random() * 180 > 175 and 1 or 0
-			--end
 			if y == 29 + y_delta then 
-				if (gap <= 0 or x <= 30) then World.grid[x][y] = 1 end
-				if x > 2 and World.grid[x - 2][y] ~= 1 then World.grid[x][y] = 1 end
+				if gap <= 0  then World.grid[x][y] = 1  end
+				print(has_gap, gap, x, World.grid[x > 2 and x-2 or x][y])
 			end
 			World.boxes[x][y] = Box.getBoundingBox(x * World.tile_size, y * World.tile_size, World.tile_size, World.tile_size) 
 		end
+
+
 		gap = gap -1
-		if gap <= 0 then 
-			gap = math.random() * 40 > 35 and math.floor(math.random() * 4) + 4 or 0
+
+		if gap <= 0 and x > 10 and World.grid[x - 1 > 0 and x - 1 or x][ 29 + y_delta] == 1 then 
+			gap = math.random() * 40 > 35 and math.floor(math.random() * 4) + 2 or 0
 			if gap > 0 then 
-				y_delta = math.random() * 40 > 35 and math.floor( math.random() * 6  - 3) or y_delta
+				y_delta = math.random() * 30 > 25 and math.floor( math.random() * 6  - 3) or y_delta
 			end
 		end
 
-		--y_delta = math.random() * 40 > 35 and math.floor( math.random() * 6  - 3) or y_delta
 	end
 end
 
@@ -58,31 +61,33 @@ function World.draw()
 
 	love.graphics.setColor(1, 1, 1)
 
-	local vloer_index = 1
+	local startX = math.floor((Camera.x - 400)/ World.tile_size)
+	local stopX = startX + math.floor(800 / World.tile_size)
+	local startY = math.floor((Camera.y -300 )/ World.tile_size)
+	local stopY = math.floor((Camera.y + 600 )/ World.tile_size)
 
-	for x = 1, World.dimensions.x -1 do
-		for y = 0, World.dimensions.y do
-			if World.grid[x][y] == 1 and World.grid[x - 1][y] ~= 1 then
+	for x = startX, stopX do
+		for y = startY, stopY do
+			if World.grid[x][y] == 1 and x >= 1 and World.grid[x - 1][y] ~= 1 then
 				love.graphics.draw(vloer, tile_sprites[0], x * World.tile_size, y * World.tile_size -15, 0, 0.25, 0.5)
-				vloer_index = 1
-			elseif World.grid[x][y] == 1 and  World.grid[x + 1][y] ~= 1 then
+			elseif World.grid[x][y] == 1 and  x <= World.dimensions.x - 1 and World.grid[x + 1][y] ~= 1 then
 				love.graphics.draw(vloer, tile_sprites[5], x * World.tile_size, y * World.tile_size -15, 0, 0.25, 0.5)
-				vloer_index = 1
 			elseif World.grid[x][y] == 1 then
+				vloer_index = math.mod(x, 4) + 1
 				love.graphics.draw(vloer, tile_sprites[vloer_index], x * World.tile_size, y * World.tile_size -15, 0, 0.25, 0.5)
-				vloer_index = vloer_index + 1
-				if vloer_index > 4 then vloer_index = 1 end
 			end
 		end
 	end
+	
+	PlayerDust.draw()
 
-	boxes, edges = World.findCollidingBoxes(Player.box)
+	--boxes, edges = World.findCollidingBoxes(Player.box)
 
-	love.graphics.setColor(0, 1, 0)
-	for _, box in ipairs(boxes) do 
-		local rectangle = Box.toRectangle(box)
-		--love.graphics.rectangle("fill", rectangle.x, rectangle.y, rectangle.w, rectangle.h)
-	end
+	--love.graphics.setColor(0, 1, 0)
+	--for _, box in ipairs(boxes) do 
+	--	local rectangle = Box.toRectangle(box)
+	--	--love.graphics.rectangle("fill", rectangle.x, rectangle.y, rectangle.w, rectangle.h)
+	--end
 
 	love.graphics.setCanvas()
 
